@@ -1,6 +1,9 @@
 class CommandHandler {
-  constructor(prefix = "/") {
-    this.prefix = prefix
+  constructor(prefix = ["/", "."]) {
+    this.prefixes = Array.isArray(prefix)
+      ? prefix
+      : [prefix]
+
     this.commands = new Map()
   }
 
@@ -9,14 +12,37 @@ class CommandHandler {
   }
 
   async handle(msg) {
-    if (!msg.text?.startsWith(this.prefix)) return
-    const [cmd, ...args] = msg.text
-      .slice(this.prefix.length)
-      .split(" ")
+    if (!msg.text) return
 
-    if (this.commands.has(cmd)) {
-      await this.commands.get(cmd)(msg, args)
+    const text = msg.text.trim()
+    if (!text) return
+
+    let command = null
+    let args = []
+
+    for (const p of this.prefixes) {
+      if (text.startsWith(p)) {
+        const parts = text.slice(p.length).trim().split(/\s+/)
+        command = parts.shift()
+        args = parts
+        break
+      }
     }
+
+    if (!command) {
+      const parts = text.split(/\s+/)
+      if (this.commands.has(parts[0])) {
+        command = parts.shift()
+        args = parts
+      }
+    }
+
+    if (!command) return
+
+    const handler = this.commands.get(command)
+    if (!handler) return
+
+    await handler(msg, args)
   }
 }
 
