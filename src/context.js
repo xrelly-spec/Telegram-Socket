@@ -1,5 +1,15 @@
 function buildContext(api, msg, socket) {
-  const text = msg.text || ""
+  const rawText = msg.text || ""
+  const text = rawText.trim()
+
+  const parts = text.split(/\s+/)
+
+  const command =
+    parts[0]?.startsWith("/")
+      ? parts[0].slice(1)
+      : null
+
+  const args = command ? parts.slice(1) : []
 
   const ctx = {
     api,
@@ -9,8 +19,11 @@ function buildContext(api, msg, socket) {
 
     chat: msg.chat,
     from: msg.from,
-    text,
-    args: text.split(" ").slice(1),
+
+    text: rawText,
+    command,
+    args,
+
     isGroup: msg.chat?.type !== "private",
 
     reply(text, options = {}) {
