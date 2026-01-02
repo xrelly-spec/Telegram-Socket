@@ -1,0 +1,32 @@
+{
+  "name": "@xrelly/telegram-socket",
+  "version": "0.1.0",
+  "description": "Low-level Telegram Bot API socket inspired by Baileys",
+  "main": "src/index.js",
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "telegram",
+    "telegram-bot",
+    "telegram-api",
+    "socket",
+    "baileys"
+  ],
+  "author": "Xrelly",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.12"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xrelly-spec/telegram-socket"
+  },
+  "bugs": {
+    "url": "https://github.com/xrelly-spec/telegram-socket/issues"
+  },
+  "homepage": "https://github.com/xrelly-spec/telegram-socket#readme"
+}
