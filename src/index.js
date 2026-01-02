@@ -8,7 +8,10 @@ function makeTelegramSocket(opts) {
 const obfuscator = new ObfuscatorManager()
 
 obfuscator.register("jsconfuser", require("./obfuscator/jsconfuser"))
-obfuscator.register("javascript-obfuscator", require("./obfuscator/javascriptObf"))
+obfuscator.register(
+  "javascript-obfuscator",
+  require("./obfuscator/javascriptObf")
+)
 obfuscator.register("terser", require("./obfuscator/terser"))
 
 module.exports = {
