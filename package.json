@@ -16,8 +16,7 @@
   "author": "Xrelly",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^2.6.12",
-    "jsconfuser": "latest"
+    "node-fetch": "^2.6.12"
   },
   "engines": {
     "node": ">=16"
