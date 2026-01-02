@@ -1,4 +1,4 @@
-const JsConfuser = require("js-confuser")
+const JsConfuser = require("jsconfuser")
 
 module.exports = async (code, options = {}) => {
   return await JsConfuser.obfuscate(code, {
