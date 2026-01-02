@@ -31,6 +31,10 @@ npm install @xrelly-spec/telegram-socket
 
 ## 🧑‍💻 Quick Start
 ```js
+"@xrelly-spec/telegram-socke": "github:xrelly-spec/Telegram-Socket"
+```
+
+```js
 const { makeTelegramSocket } = require("@xrelly-spec/telegram-socket")
 
 const bot = makeTelegramSocket({
