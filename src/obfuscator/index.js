@@ -4,22 +4,27 @@ class ObfuscatorManager {
   }
 
   register(name, engine) {
-    if (typeof engine.obfuscate !== "function") {
-      throw new Error("Invalid obfuscator engine")
-    }
-    this.engines.set(name.toLowerCase(), engine)
+    this.engines.set(name, engine)
   }
 
-  async obfuscate(name, code, options = {}) {
-    const engine = this.engines.get(name.toLowerCase())
-    if (!engine) {
-      throw new Error(`Obfuscator '${name}' not found`)
-    }
-    return engine.obfuscate(code, options)
+  has(name) {
+    return this.engines.has(name)
   }
 
   list() {
     return [...this.engines.keys()]
+  }
+
+  async obfuscate(name, code, options = {}) {
+    if (!this.engines.has(name))
+      throw new Error("Engine not found: " + name)
+
+    const engine = this.engines.get(name)
+
+    if (typeof engine !== "function")
+      throw new Error("Invalid obfuscator engine")
+
+    return await engine(code, options)
   }
 }
 
