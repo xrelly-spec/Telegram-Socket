@@ -37,6 +37,26 @@ class TelegramSocket {
     if (this.polling) this._poll()
   }
 
+  async _handleUpdate(update) {
+    const parsed = parseUpdate(update)
+    if (!parsed.message) return
+
+    // ✅ BUILD CONTEXT
+    const ctx = buildContext(this.api, parsed.message, this)
+
+    try {
+      // ✅ PLUGIN PIPELINE
+      await this.plugins.run(ctx)
+
+      // ✅ COMMAND HANDLER (CTX BASED)
+      await this.commands.handle(ctx)
+    } catch (err) {
+      logger.error("Handler error", err)
+    }
+
+    this.events.emitUpdate(parsed.raw)
+  }
+
   async _poll() {
     while (this.running) {
       try {
@@ -47,14 +67,7 @@ class TelegramSocket {
 
         for (const upd of updates) {
           this.offset = upd.update_id + 1
-          const parsed = parseUpdate(upd)
-
-          if (parsed.message) {
-            buildContext(this.api, parsed.message)
-            await this.commands.handle(parsed.message)
-          }
-
-          this.events.emitUpdate(parsed.raw)
+          await this._handleUpdate(upd)
         }
 
         this.retry = 0
@@ -71,20 +84,19 @@ class TelegramSocket {
 
     http
       .createServer(async (req, res) => {
-        let body = ""
-        req.on("data", c => (body += c))
-        req.on("end", async () => {
-          const update = JSON.parse(body)
-          const parsed = parseUpdate(update)
-
-          if (parsed.message) {
-            buildContext(this.api, parsed.message)
-            await this.commands.handle(parsed.message)
-          }
-
-          this.events.emitUpdate(update)
-          res.end("OK")
-        })
+        try {
+          let body = ""
+          req.on("data", c => (body += c))
+          req.on("end", async () => {
+            const update = JSON.parse(body)
+            await this._handleUpdate(update)
+            res.end("OK")
+          })
+        } catch (err) {
+          logger.error("Webhook error", err)
+          res.statusCode = 500
+          res.end("ERROR")
+        }
       })
       .listen(this.webhook.port)
 
