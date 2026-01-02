@@ -22,7 +22,7 @@ class TelegramAPI {
 
     return json.result
   }
-  
+
   sendMessage(chat_id, text, options = {}) {
     return this.call("sendMessage", {
       chat_id,
@@ -72,6 +72,50 @@ class TelegramAPI {
       chat_id,
       phone_number,
       first_name,
+      ...options
+    })
+  }
+
+  sendButtons(chat_id, text, buttons, options = {}) {
+    return this.call("sendMessage", {
+      chat_id,
+      text,
+      reply_markup: {
+        inline_keyboard: buttons
+      },
+      ...options
+    })
+  }
+
+  sendReplyKeyboard(chat_id, text, keyboard, options = {}) {
+    return this.call("sendMessage", {
+      chat_id,
+      text,
+      reply_markup: {
+        keyboard,
+        resize_keyboard: true,
+        one_time_keyboard: false
+      },
+      ...options
+    })
+  }
+
+  removeKeyboard(chat_id, text = "Keyboard removed", options = {}) {
+    return this.call("sendMessage", {
+      chat_id,
+      text,
+      reply_markup: {
+        remove_keyboard: true
+      },
+      ...options
+    })
+  }
+
+  sendPoll(chat_id, question, optionsList = [], options = {}) {
+    return this.call("sendPoll", {
+      chat_id,
+      question,
+      options: optionsList,
       ...options
     })
   }
