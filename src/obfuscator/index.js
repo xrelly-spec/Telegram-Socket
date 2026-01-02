@@ -3,28 +3,79 @@ class ObfuscatorManager {
     this.engines = new Map()
   }
 
+  /**
+   * Register obfuscator engine
+   * engine can be:
+   * - function(code, options)
+   * - object with obfuscate()
+   * - class with obfuscate()
+   */
   register(name, engine) {
-    this.engines.set(name, engine)
+    if (!name || !engine)
+      throw new Error("Invalid obfuscator registration")
+
+    this.engines.set(name.toLowerCase(), engine)
   }
 
   has(name) {
-    return this.engines.has(name)
+    return this.engines.has(name?.toLowerCase())
   }
 
   list() {
     return [...this.engines.keys()]
   }
 
+  get(name) {
+    return this.engines.get(name?.toLowerCase())
+  }
+
+  /**
+   * Normalize engine call
+   */
+  async _runEngine(engine, code, options) {
+    if (typeof engine === "function") {
+      return await engine(code, options)
+    }
+    
+    if (typeof engine.obfuscate === "function") {
+      return await engine.obfuscate(code, options)
+    }
+
+    throw new Error("Invalid obfuscator engine interface")
+  }
+
+  /**
+   * Main obfuscate method
+   */
   async obfuscate(name, code, options = {}) {
-    if (!this.engines.has(name))
-      throw new Error("Engine not found: " + name)
+    if (!name)
+      throw new Error("Obfuscator engine name is required")
 
-    const engine = this.engines.get(name)
+    if (!code || typeof code !== "string")
+      throw new Error("Invalid JavaScript code")
 
-    if (typeof engine !== "function")
-      throw new Error("Invalid obfuscator engine")
+    const engine = this.get(name)
 
-    return await engine(code, options)
+    if (!engine)
+      throw new Error(
+        "Engine not found: " +
+        name +
+        "\nAvailable: " +
+        this.list().join(", ")
+      )
+
+    try {
+      const result = await this._runEngine(engine, code, options)
+
+      if (typeof result === "string") return result
+      if (result?.code) return result.code
+
+      throw new Error("Invalid obfuscator output")
+    } catch (err) {
+      throw new Error(
+        `[${name}] Obfuscation failed: ${err.message}`
+      )
+    }
   }
 }
 
