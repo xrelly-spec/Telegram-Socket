@@ -39,7 +39,6 @@ class CommandHandler {
     const handler = this.commands.get(command)
     if (!handler) return
 
-    // 🔥 socket-style handler
     await handler(sock, msg, args)
   }
 }
