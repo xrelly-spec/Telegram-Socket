@@ -4,6 +4,7 @@ const parseUpdate = require("./parser")
 const buildContext = require("./context")
 const PluginManager = require("./plugin")
 const CommandHandler = require("./command")
+const buildPollContext = require("./pollContext.js")
 const { delay, backoff } = require("./utils")
 const logger = require("./logger")
 
