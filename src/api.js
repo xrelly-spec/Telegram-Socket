@@ -1,4 +1,5 @@
 const fetch = require("node-fetch")
+const { request } = require("undici")
 
 class TelegramAPI {
   constructor(token) {
@@ -7,20 +8,30 @@ class TelegramAPI {
   }
 
   async call(method, params = {}) {
-    const res = await fetch(`${this.base}/${method}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(params)
-    })
+    try {
+      const { statusCode, body } = await request(
+        `${this.base}/${method}`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify(params)
+        }
+      )
 
-    const json = await res.json()
-    if (!json.ok) {
-      throw new Error(json.description || "Telegram API error")
+      const json = await body.json()
+
+      if (!json.ok) {
+        throw new Error(json.description || "Telegram API error")
+      }
+
+      return json.result
+    } catch (err) {
+      throw new Error(
+        `[TelegramAPI] ${method} failed: ${err.message}`
+      )
     }
-
-    return json.result
   }
 
   sendMessage(chat_id, text, options = {}) {
@@ -72,6 +83,17 @@ class TelegramAPI {
       chat_id,
       phone_number,
       first_name,
+      ...options
+    })
+  }
+
+  sendVenue(chat_id, latitude, longitude, title, address, options = {}) {
+    return this.call("sendVenue", {
+      chat_id,
+      latitude,
+      longitude,
+      title,
+      address,
       ...options
     })
   }
