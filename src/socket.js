@@ -2,6 +2,7 @@ const TelegramAPI = require("./api")
 const BotEvents = require("./events")
 const parseUpdate = require("./parser")
 const buildContext = require("./context")
+const buildCallbackContext = require("./callbackContext")
 const PluginManager = require("./plugin")
 const CommandHandler = require("./command")
 const { delay, backoff } = require("./utils")
@@ -31,7 +32,7 @@ class TelegramSocket {
 
   async start() {
     this.running = true
-    logger.info("Telegram-Socket Is Started!!!")
+    logger.info("Telegram-Socket started")
 
     if (this.webhook) return this._startWebhook()
     if (this.polling) this._poll()
@@ -51,24 +52,7 @@ class TelegramSocket {
     }
 
     if (parsed.type === "callback_query") {
-      const cb = parsed.callback
-
-      const ctx = {
-        ...cb,
-        data: cb.data,
-        from: cb.from,
-        message: cb.message,
-        reply: (text, options = {}) =>
-          this.api.sendMessage(cb.message.chat.id, text, options),
-        edit: (text, options = {}) =>
-          this.api.editMessageText(
-            cb.message.chat.id,
-            cb.message.message_id,
-            text,
-            options
-          )
-      }
-
+      const ctx = buildCallbackContext(this.api, parsed.callback)
       this.events.emit("callback_query", ctx)
     }
 
@@ -83,7 +67,7 @@ class TelegramSocket {
 
     this.events.emitUpdate(parsed.raw)
   }
-
+  
   async _poll() {
     while (this.running) {
       try {
