@@ -10,7 +10,7 @@ const { delay, backoff } = require("./utils")
 const logger = require("./logger")
 
 class TelegramSocket {
-  constructor({ token, polling = true, webhook = null, prefix = "/" }) {
+  constructor({ token, polling = true, webhook = null, prefix = ["/", "."] }) {
     this.api = new TelegramAPI(token)
     this.events = new BotEvents()
     this.plugins = new PluginManager(this)
@@ -43,13 +43,11 @@ class TelegramSocket {
     const parsed = parseUpdate(update)
 
     if (parsed.type === "message") {
-      const ctx = buildContext(this.api, parsed.message)
+      const msg = buildContext(this.api, parsed.message)
 
-      if (ctx.text) {
-        await this.commands.handle(ctx)
-      }
+      await this.commands.handle(this.api, msg)
 
-      this.events.emit("message", ctx)
+      this.events.emit("message", msg)
     }
 
     if (parsed.type === "callback_query") {
@@ -63,13 +61,13 @@ class TelegramSocket {
     }
 
     if (parsed.type === "edited_message") {
-      const ctx = buildContext(this.api, parsed.message)
-      this.events.emit("edited_message", ctx)
+      const msg = buildContext(this.api, parsed.message)
+      this.events.emit("edited_message", msg)
     }
 
     this.events.emitUpdate(parsed.raw)
   }
-  
+
   async _poll() {
     while (this.running) {
       try {
