@@ -5,6 +5,7 @@ const buildContext = require("./context")
 const PluginManager = require("./plugin")
 const CommandHandler = require("./command")
 const buildPollContext = require("./pollContext.js")
+const buildCallbackContext = require("./callbackContext")
 const { delay, backoff } = require("./utils")
 const logger = require("./logger")
 
@@ -58,6 +59,11 @@ class TelegramSocket {
           if (parsed.type === "poll_answer") {
             const ctx = buildPollContext(this.api, parsed.poll)
             this.events.emit("poll_answer", ctx)
+          }
+
+          if (parsed.type === "callback_query") {
+            const ctx = buildCallbackContext(this.api, parsed.callback)
+            this.events.emit("callback_query", ctx)
           }
 
           this.events.emitUpdate(parsed.raw)
