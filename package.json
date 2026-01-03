@@ -16,7 +16,8 @@
   "author": "Xrelly",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^2.6.12"
+    "node-fetch": "^2.6.12",
+    "undici": "^6.18.1"
   },
   "engines": {
     "node": ">=16"
