@@ -1,8 +1,38 @@
 function parseUpdate(update) {
+  if (update.message) {
+    return {
+      type: "message",
+      message: update.message,
+      raw: update
+    }
+  }
+
+  if (update.edited_message) {
+    return {
+      type: "edited_message",
+      message: update.edited_message,
+      raw: update
+    }
+  }
+
+  if (update.callback_query) {
+    return {
+      type: "callback_query",
+      callback: update.callback_query,
+      raw: update
+    }
+  }
+
+  if (update.poll_answer) {
+    return {
+      type: "poll_answer",
+      poll: update.poll_answer,
+      raw: update
+    }
+  }
+
   return {
-    updateId: update.update_id,
-    message: update.message || null,
-    callback: update.callback_query || null,
+    type: "unknown",
     raw: update
   }
 }
