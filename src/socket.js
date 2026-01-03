@@ -66,7 +66,7 @@ class TelegramSocket {
             this.events.emit("callback_query", ctx)
           }
 
-          if (update.poll_answer) {
+          if (upd.poll_answer) {
             const ctx = buildPollContext(this.api, update.poll_answer)
             this.events.emit("poll_answer", ctx)
           }
