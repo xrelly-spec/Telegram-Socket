@@ -2,15 +2,13 @@ const TelegramAPI = require("./api")
 const BotEvents = require("./events")
 const parseUpdate = require("./parser")
 const buildContext = require("./context")
-const buildCallbackContext = require("./callbackContext")
-const buildPollContext = require("./pollContext")
 const PluginManager = require("./plugin")
 const CommandHandler = require("./command")
 const { delay, backoff } = require("./utils")
 const logger = require("./logger")
 
 class TelegramSocket {
-  constructor({ token, polling = true, webhook = null, prefix = ["/", "."] }) {
+  constructor({ token, polling = true, webhook = null, prefix = "/" }) {
     this.api = new TelegramAPI(token)
     this.events = new BotEvents()
     this.plugins = new PluginManager(this)
@@ -33,39 +31,10 @@ class TelegramSocket {
 
   async start() {
     this.running = true
-    logger.info("Telegram-Socket started")
+    logger.info("TelegramSocket started")
 
     if (this.webhook) return this._startWebhook()
     if (this.polling) this._poll()
-  }
-
-  async _handleUpdate(update) {
-    const parsed = parseUpdate(update)
-
-    if (parsed.type === "message") {
-      const msg = buildContext(this.api, parsed.message)
-
-      await this.commands.handle(this.api, msg)
-
-      this.events.emit("message", msg)
-    }
-
-    if (parsed.type === "callback_query") {
-      const ctx = buildCallbackContext(this.api, parsed.callback)
-      this.events.emit("callback_query", ctx)
-    }
-
-    if (parsed.type === "poll_answer") {
-      const ctx = buildPollContext(this.api, parsed.poll)
-      this.events.emit("poll_answer", ctx)
-    }
-
-    if (parsed.type === "edited_message") {
-      const msg = buildContext(this.api, parsed.message)
-      this.events.emit("edited_message", msg)
-    }
-
-    this.events.emitUpdate(parsed.raw)
   }
 
   async _poll() {
@@ -78,7 +47,14 @@ class TelegramSocket {
 
         for (const upd of updates) {
           this.offset = upd.update_id + 1
-          await this._handleUpdate(upd)
+          const parsed = parseUpdate(upd)
+
+          if (parsed.message) {
+            buildContext(this.api, parsed.message)
+            await this.commands.handle(parsed.message)
+          }
+
+          this.events.emitUpdate(parsed.raw)
         }
 
         this.retry = 0
@@ -98,15 +74,16 @@ class TelegramSocket {
         let body = ""
         req.on("data", c => (body += c))
         req.on("end", async () => {
-          try {
-            const update = JSON.parse(body)
-            await this._handleUpdate(update)
-            res.end("OK")
-          } catch (e) {
-            logger.error("Webhook error", e)
-            res.statusCode = 500
-            res.end("ERROR")
+          const update = JSON.parse(body)
+          const parsed = parseUpdate(update)
+
+          if (parsed.message) {
+            buildContext(this.api, parsed.message)
+            await this.commands.handle(parsed.message)
           }
+
+          this.events.emitUpdate(update)
+          res.end("OK")
         })
       })
       .listen(this.webhook.port)
