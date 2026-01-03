@@ -31,10 +31,57 @@ class TelegramSocket {
 
   async start() {
     this.running = true
-    logger.info("TelegramSocket started")
+    logger.info("Telegram-Socket Is Started!!!")
 
     if (this.webhook) return this._startWebhook()
     if (this.polling) this._poll()
+  }
+
+  async _handleUpdate(update) {
+    const parsed = parseUpdate(update)
+
+    if (parsed.type === "message") {
+      const ctx = buildContext(this.api, parsed.message)
+
+      if (ctx.text) {
+        await this.commands.handle(ctx)
+      }
+
+      this.events.emit("message", ctx)
+    }
+
+    if (parsed.type === "callback_query") {
+      const cb = parsed.callback
+
+      const ctx = {
+        ...cb,
+        data: cb.data,
+        from: cb.from,
+        message: cb.message,
+        reply: (text, options = {}) =>
+          this.api.sendMessage(cb.message.chat.id, text, options),
+        edit: (text, options = {}) =>
+          this.api.editMessageText(
+            cb.message.chat.id,
+            cb.message.message_id,
+            text,
+            options
+          )
+      }
+
+      this.events.emit("callback_query", ctx)
+    }
+
+    if (parsed.type === "poll_answer") {
+      this.events.emit("poll_answer", parsed.poll)
+    }
+
+    if (parsed.type === "edited_message") {
+      const ctx = buildContext(this.api, parsed.message)
+      this.events.emit("edited_message", ctx)
+    }
+
+    this.events.emitUpdate(parsed.raw)
   }
 
   async _poll() {
@@ -47,14 +94,7 @@ class TelegramSocket {
 
         for (const upd of updates) {
           this.offset = upd.update_id + 1
-          const parsed = parseUpdate(upd)
-
-          if (parsed.message) {
-            buildContext(this.api, parsed.message)
-            await this.commands.handle(parsed.message)
-          }
-
-          this.events.emitUpdate(parsed.raw)
+          await this._handleUpdate(upd)
         }
 
         this.retry = 0
@@ -74,16 +114,15 @@ class TelegramSocket {
         let body = ""
         req.on("data", c => (body += c))
         req.on("end", async () => {
-          const update = JSON.parse(body)
-          const parsed = parseUpdate(update)
-
-          if (parsed.message) {
-            buildContext(this.api, parsed.message)
-            await this.commands.handle(parsed.message)
+          try {
+            const update = JSON.parse(body)
+            await this._handleUpdate(update)
+            res.end("OK")
+          } catch (e) {
+            logger.error("Webhook error", e)
+            res.statusCode = 500
+            res.end("ERROR")
           }
-
-          this.events.emitUpdate(update)
-          res.end("OK")
         })
       })
       .listen(this.webhook.port)
