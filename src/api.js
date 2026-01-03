@@ -119,6 +119,26 @@ class TelegramAPI {
       ...options
     })
   }
+
+ sendLocation(chat_id, latitude, longitude, options = {}) {
+  return this.call("sendLocation", {
+    chat_id,
+    latitude,
+    longitude,
+    ...options
+  })
 }
+
+sendVenue(chat_id, latitude, longitude, title, address = "", options = {}) {
+  return this.call("sendVenue", {
+    chat_id,
+    latitude,
+    longitude,
+    title,
+    address,
+    ...options
+  })
+}}
+
 
 module.exports = TelegramAPI
