@@ -50,6 +50,22 @@ function buildContext(api, msg) {
   msg.sendPoll = (question, optionsList = [], options = {}) =>
     api.sendPoll(chatId, question, optionsList, options)
 
+  msg.sendVenue = (
+  latitude,
+  longitude,
+  title,
+  address = "",
+  options = {}
+) =>
+  api.call("sendVenue", {
+    chat_id: chatId,
+    latitude,
+    longitude,
+    title,
+    address,
+    ...options
+  })
+  
   return msg
 }
 
