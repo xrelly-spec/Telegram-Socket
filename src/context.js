@@ -25,9 +25,7 @@ function buildContext(api, msg) {
 
   msg.sendButtons = (text, buttons, options = {}) =>
     api.sendMessage(chatId, text, {
-      reply_markup: {
-        inline_keyboard: buttons
-      },
+      reply_markup: { inline_keyboard: buttons },
       ...options
     })
 
@@ -43,9 +41,7 @@ function buildContext(api, msg) {
 
   msg.removeKeyboard = (text = "Keyboard removed", options = {}) =>
     api.sendMessage(chatId, text, {
-      reply_markup: {
-        remove_keyboard: true
-      },
+      reply_markup: { remove_keyboard: true },
       ...options
     })
 
