@@ -1,17 +1,29 @@
 function buildContext(api, msg) {
-  const chatId = msg.chat?.id
-  const messageId = msg.message_id
+  const chatId =
+    msg.chat?.id ||
+    msg.message?.chat?.id ||
+    msg.from?.id
+
+  const messageId =
+    msg.message_id ||
+    msg.message?.message_id
 
   msg.api = api
 
-  msg.reply = (text, options = {}) =>
-    api.sendMessage(chatId, text, {
-      reply_to_message_id: messageId,
+  msg.reply = (text, options = {}) => {
+    if (!chatId) throw new Error("chatId not found")
+    return api.sendMessage(chatId, text, {
+      ...(messageId ? { reply_to_message_id: messageId } : {}),
       ...options
     })
+  }
 
-  msg.edit = (text, options = {}) =>
-    api.editMessageText(chatId, messageId, text, options)
+  msg.edit = (text, options = {}) => {
+    if (!chatId || !messageId)
+      throw new Error("editMessage requires chatId & messageId")
+
+    return api.editMessageText(chatId, messageId, text, options)
+  }
 
   msg.sendPhoto = (photo, caption = "", options = {}) =>
     api.sendPhoto(chatId, photo, caption, options)
@@ -51,21 +63,21 @@ function buildContext(api, msg) {
     api.sendPoll(chatId, question, optionsList, options)
 
   msg.sendVenue = (
-  latitude,
-  longitude,
-  title,
-  address = "",
-  options = {}
-) =>
-  api.call("sendVenue", {
-    chat_id: chatId,
     latitude,
     longitude,
     title,
-    address,
-    ...options
-  })
-  
+    address = "",
+    options = {}
+  ) =>
+    api.call("sendVenue", {
+      chat_id: chatId,
+      latitude,
+      longitude,
+      title,
+      address,
+      ...options
+    })
+
   return msg
 }
 
