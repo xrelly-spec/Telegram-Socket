@@ -2,6 +2,8 @@ function buildContext(api, msg) {
   const chatId = msg.chat?.id
   const messageId = msg.message_id
 
+  msg.api = api
+
   msg.reply = (text, options = {}) =>
     api.sendMessage(chatId, text, {
       reply_to_message_id: messageId,
