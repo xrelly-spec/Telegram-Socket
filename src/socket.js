@@ -31,7 +31,7 @@ class TelegramSocket {
 
   async start() {
     this.running = true
-    logger.info("TelegramSocket started")
+    logger.info("Telegram-Socket started bro!!!")
 
     if (this.webhook) return this._startWebhook()
     if (this.polling) this._poll()
@@ -52,6 +52,11 @@ class TelegramSocket {
           if (parsed.message) {
             buildContext(this.api, parsed.message)
             await this.commands.handle(parsed.message)
+          }
+
+          if (parsed.type === "poll_answer") {
+            const ctx = buildPollContext(this.api, parsed.poll)
+            this.events.emit("poll_answer", ctx)
           }
 
           this.events.emitUpdate(parsed.raw)
