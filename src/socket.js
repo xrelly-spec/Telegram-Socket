@@ -3,6 +3,7 @@ const BotEvents = require("./events")
 const parseUpdate = require("./parser")
 const buildContext = require("./context")
 const buildCallbackContext = require("./callbackContext")
+const buildPollContext = require("./pollContext")
 const PluginManager = require("./plugin")
 const CommandHandler = require("./command")
 const { delay, backoff } = require("./utils")
@@ -57,7 +58,8 @@ class TelegramSocket {
     }
 
     if (parsed.type === "poll_answer") {
-      this.events.emit("poll_answer", parsed.poll)
+      const ctx = buildPollContext(this.api, parsed.poll)
+      this.events.emit("poll_answer", ctx)
     }
 
     if (parsed.type === "edited_message") {
