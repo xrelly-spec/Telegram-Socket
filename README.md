@@ -3,7 +3,7 @@
 A lightweight, low-level Telegram Bot API socket inspired by  
 **@whiskeysockets/baileys**, built for developers who want **full control**, **extensibility**, and **minimal abstraction**.
 
-Telegram-Socket is designed as a **core engine**, not a framework — flexible enough to build custom bots, automation tools, obfuscation services, or Telegram-based systems.
+Telegram-Socket is designed as a **core engine**, not a framework — flexible enough to build custom bots, automation tools, or Telegram-based systems.
 
 ---
 
