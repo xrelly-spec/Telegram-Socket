@@ -16,8 +16,7 @@ Telegram-Socket is designed as a **core engine**, not a framework — flexible e
 - 📦 Media support (photo, video, document, contact)
 - 🔘 Inline buttons & reply keyboards
 - 📊 Polling (Telegram Poll API)
-- ✏️ Edit messages
-- 🔐 Built-in obfuscator manager (JsConfuser, Terser, etc.)
+- ✏️ Edit message
 - ♻️ Hot-reload friendly (fs.watch supported)
 - 🪶 Minimal dependencies & clean structure
 
